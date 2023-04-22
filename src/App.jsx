@@ -11,9 +11,10 @@ function Square({ value, onClick }) {
         </div>
     );
 }
-function Board() {
-    const [xIsNext, setXIsNext] = useState(true);
-    const [squares, setSquares] = useState(Array(9).fill(null));
+
+function Board({ xIsNext, squares, onPlay }) {
+    //const [xIsNext, setXIsNext] = useState(true);
+    //const [squares, setSquares] = useState(Array(9).fill(null));
     let status;
 
     function handleClick(i) {
@@ -29,9 +30,9 @@ function Board() {
             nextSquares[i] = "O";
         }
 
-        setSquares(nextSquares);
-        setXIsNext(!xIsNext);
-        console.log(nextSquares);
+        //setSquares(nextSquares);
+        //setXIsNext(!xIsNext);
+        onPlay(nextSquares);
     }
 
     let winner = calculateWinner(squares);
@@ -67,22 +68,58 @@ function Board() {
 }
 
 export default function Game() {
+    //const [xIsNext, setXIsNext] = useState(true);
+    //const [squares, setSquares] = useState(Array(9).fill(null));
+    const [history, setHistory] = useState([Array(9).fill(null)]);
+    const [currentMove, setCurrentMove] = useState(0);
+    const xIsNext = currentMove % 2 === 0;
+    const currentSquares = history[currentMove];
+
+    //setHistory();
+    function onPlay(nextSquares) {
+        //setSquares(nextSquares);
+        //setXIsNext(!xIsNext);
+        const nextHistory = [...history.slice(0, currentMove + 1), nextSquares];
+        setHistory(nextHistory);
+        setCurrentMove(nextHistory.length - 1);
+    }
+
+    function undoMove() {
+        setCurrentMove((move) => move - 1);
+    }
+
+    function redoMove() {
+        setCurrentMove((move) => move + 1);
+    }
+
     return (
         <div className="bg-gray-200 mx-auto w-1/2 p-10">
             <h1 className="text-4xl font-bold">Tic-Tac-Toe</h1>
-
+            {currentMove}
             <div className="flex mt-10 justify-center">
-                <Board />
+                <Board
+                    xIsNext={xIsNext}
+                    squares={currentSquares}
+                    onPlay={onPlay}
+                />
                 <div className="board-history mt-8 text-start">
                     <ol className="space-y-1">
                         <li>
-                            <button className="border border-1 border-gray-400 bg-gray-300 rounded px-1">
-                                undo
+                            <button
+                                className="border border-1 border-gray-400 bg-gray-100 rounded px-1 disabled:bg-gray-300"
+                                disabled={currentMove === 0}
+                                onClick={() => undoMove()}
+                            >
+                                Undo
                             </button>
                         </li>
                         <li>
-                            <button className="border border-1 border-gray-400 bg-gray-300 rounded px-1">
-                                redo
+                            <button
+                                className="border border-1 border-gray-400 bg-gray-100 rounded px-1 disabled:bg-gray-300"
+                                disabled={currentMove === history.length - 1}
+                                onClick={() => redoMove()}
+                            >
+                                Redo
                             </button>
                         </li>
                     </ol>
